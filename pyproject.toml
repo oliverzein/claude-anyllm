@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "atlas-anthropic-proxy"
+version = "0.2.0"
+description = "Anthropic-to-OpenAI protocol translation proxy for Atlas Cloud"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.25",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+]
+
+[project.scripts]
+atlas-anthropic-proxy = "atlas_proxy:run_server"
+
+[tool.hatch.build.targets.wheel]
+packages = ["atlas_proxy"]
