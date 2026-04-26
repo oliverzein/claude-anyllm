@@ -11,9 +11,7 @@ COPY atlas_proxy/ atlas_proxy/
 RUN pip install --no-cache-dir -e . \
     && rm -rf /root/.cache/pip
 
-ENV ATLASCLOUD_API_KEY="" \
-    ATLAS_PROXY_HOST=0.0.0.0 \
-    ATLAS_PROXY_PORT=8082
+ENV ATLAS_PROXY_PORT=8082
 
 EXPOSE 8082
 
