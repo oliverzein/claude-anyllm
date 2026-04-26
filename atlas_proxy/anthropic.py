@@ -54,6 +54,10 @@ def anthropic_to_openai_messages(payload):
             block_type = block.get("type")
             if block_type == "text":
                 text_parts.append(block.get("text", ""))
+            elif block_type == "thinking":
+                thinking_text = block.get("thinking", "")
+                if thinking_text:
+                    text_parts.append(f"[thinking]{thinking_text}[/thinking]")
             elif block_type == "tool_use":
                 tool_calls.append(
                     {

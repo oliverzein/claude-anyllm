@@ -1,7 +1,7 @@
 from .errors import ProxyError
 
 
-SUPPORTED_CONTENT_BLOCK_TYPES = {"text", "tool_use", "tool_result"}
+SUPPORTED_CONTENT_BLOCK_TYPES = {"text", "tool_use", "tool_result", "thinking"}
 
 
 def validate_messages_request(payload):
@@ -149,6 +149,13 @@ def validate_message(message):
             if not isinstance(block.get("name"), str) or not block["name"]:
                 raise ProxyError(
                     "`tool_use` blocks must include a non-empty string `name`",
+                    status_code=400,
+                    error_type="invalid_request_error",
+                )
+        if block_type == "thinking":
+            if not isinstance(block.get("thinking"), str):
+                raise ProxyError(
+                    "`thinking` blocks must include a string `thinking` field",
                     status_code=400,
                     error_type="invalid_request_error",
                 )
