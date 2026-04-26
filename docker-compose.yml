@@ -1,0 +1,24 @@
+services:
+  claude-anyllm:
+    build: .
+    image: claude-anyllm:latest
+    container_name: claude-anyllm-proxy
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - ATLASCLOUD_API_KEY=${ATLASCLOUD_API_KEY:?ATLASCLOUD_API_KEY is required}
+      - ATLAS_PROXY_HOST=0.0.0.0
+      - ATLAS_PROXY_PORT=8082
+      # Optional overrides:
+      # - ATLAS_BASE_URL=https://api.atlascloud.ai/v1
+      # - ATLAS_PROXY_DEFAULT_MODEL=qwen/qwen3.6-plus
+      # - ATLAS_PROXY_TIMEOUT_SECONDS=600
+      # - ATLAS_PROXY_ENABLE_UPSTREAM_STREAMING=true
+      # - ATLAS_PROXY_DEBUG=false
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
