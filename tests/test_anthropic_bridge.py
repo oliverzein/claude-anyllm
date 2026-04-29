@@ -213,6 +213,61 @@ class AnthropicBridgeTests(unittest.TestCase):
         self.assertEqual(events[0]["event"], "content_block_stop")
         self.assertEqual(events[-1]["event"], "message_stop")
 
+    def test_usage_maps_reasoning_tokens_to_cache_creation(self):
+        response = {
+            "id": "chatcmpl-456",
+            "choices": [
+                {"message": {"content": "hello", "role": "assistant"}, "finish_reason": "stop"}
+            ],
+            "usage": {
+                "prompt_tokens": 11,
+                "completion_tokens": 25,
+                "total_tokens": 36,
+                "completion_tokens_details": {"reasoning_tokens": 10, "text_tokens": 25},
+                "cache_read_input_tokens": 5,
+            },
+        }
+        result = openai_to_anthropic_message(response, "test-model")
+        self.assertEqual(result["usage"]["input_tokens"], 11)
+        self.assertEqual(result["usage"]["output_tokens"], 25)
+        self.assertEqual(result["usage"]["cache_creation_input_tokens"], 10)
+        self.assertEqual(result["usage"]["cache_read_input_tokens"], 5)
+
+    def test_usage_without_cache_tokens(self):
+        response = {
+            "id": "chatcmpl-789",
+            "choices": [
+                {"message": {"content": "hello", "role": "assistant"}, "finish_reason": "stop"}
+            ],
+            "usage": {
+                "prompt_tokens": 11,
+                "completion_tokens": 25,
+            },
+        }
+        result = openai_to_anthropic_message(response, "test-model")
+        self.assertEqual(result["usage"]["input_tokens"], 11)
+        self.assertEqual(result["usage"]["output_tokens"], 25)
+        self.assertNotIn("cache_creation_input_tokens", result["usage"])
+        self.assertNotIn("cache_read_input_tokens", result["usage"])
+
+    def test_usage_with_both_cache_and_reasoning_adds_them(self):
+        response = {
+            "id": "chatcmpl-abc",
+            "choices": [
+                {"message": {"content": "hello", "role": "assistant"}, "finish_reason": "stop"}
+            ],
+            "usage": {
+                "prompt_tokens": 100,
+                "completion_tokens": 50,
+                "cache_creation_input_tokens": 5,
+                "cache_read_input_tokens": 20,
+                "completion_tokens_details": {"reasoning_tokens": 15, "text_tokens": 35},
+            },
+        }
+        result = openai_to_anthropic_message(response, "test-model")
+        self.assertEqual(result["usage"]["cache_creation_input_tokens"], 20)
+        self.assertEqual(result["usage"]["cache_read_input_tokens"], 20)
+
 
 if __name__ == "__main__":
     unittest.main()

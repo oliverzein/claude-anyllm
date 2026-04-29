@@ -162,6 +162,19 @@ def openai_to_anthropic_message(openai_response, model):
     finish_reason = choice.get("finish_reason")
     stop_reason = "tool_use" if finish_reason == "tool_calls" or has_tool_calls else "end_turn"
     usage = openai_response.get("usage", {})
+    anthropic_usage = {
+        "input_tokens": usage.get("prompt_tokens", 0),
+        "output_tokens": usage.get("completion_tokens", 0),
+    }
+    if usage.get("cache_creation_input_tokens"):
+        anthropic_usage["cache_creation_input_tokens"] = usage["cache_creation_input_tokens"]
+    if usage.get("cache_read_input_tokens"):
+        anthropic_usage["cache_read_input_tokens"] = usage["cache_read_input_tokens"]
+    details = usage.get("completion_tokens_details") or {}
+    if details.get("reasoning_tokens"):
+        anthropic_usage["cache_creation_input_tokens"] = anthropic_usage.get(
+            "cache_creation_input_tokens", 0
+        ) + details["reasoning_tokens"]
     return {
         "id": openai_response.get("id", f"msg_{int(time.time() * 1000)}"),
         "type": "message",
@@ -170,10 +183,7 @@ def openai_to_anthropic_message(openai_response, model):
         "content": content,
         "stop_reason": stop_reason,
         "stop_sequence": None,
-        "usage": {
-            "input_tokens": usage.get("prompt_tokens", 0),
-            "output_tokens": usage.get("completion_tokens", 0),
-        },
+        "usage": anthropic_usage,
     }
 
 
