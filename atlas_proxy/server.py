@@ -132,6 +132,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             response,
             payload.get("model") or self.server.config.default_model,
         )
+        translated["usage"]["input_tokens"] = approximate_anthropic_input_tokens(payload)
         log_debug(
             self.server.config.debug,
             "proxy_response",
@@ -167,6 +168,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if not self.server.config.enable_upstream_streaming:
             response = self.server.atlas_client.create_chat_completion(request_payload | {"stream": False})
             message = openai_to_anthropic_message(response, model)
+            message["usage"]["input_tokens"] = approximate_anthropic_input_tokens(payload)
             self.send_sse_response(anthropic_message_to_sse_events(message))
             return
 
@@ -177,6 +179,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.close_connection = True
 
+        input_tokens = approximate_anthropic_input_tokens(payload)
         state = {
             "started": False,
             "done": False,
@@ -188,7 +191,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             },
             "tool_calls": {},
             "usage": {
-                "input_tokens": 0,
+                "input_tokens": input_tokens,
                 "output_tokens": 0,
             },
         }
