@@ -74,7 +74,8 @@ The Docker image is ~129MB based on `python:3.13-slim`.
 - Claude Code running against the local proxy
 - `count_tokens` compatibility route for Claude Code
 - Docker container deployment with health checks
-- All 49 unit tests passing
+- All 52 unit tests passing
+- Context window display: OpenAI usage fields mapped to Anthropic cache/reasoning tokens
 
 ## Known Limitations
 
@@ -93,6 +94,8 @@ The Docker image is ~129MB based on `python:3.13-slim`.
 - Added request-size logging via `request_bytes`
 - Added optional local request-size guardrail support via `ATLAS_PROXY_MAX_REQUEST_BYTES` / `--max-request-bytes`
 - Added Docker deployment support (Dockerfile, docker-compose.yml, .dockerignore)
+- Mapped OpenAI `completion_tokens_details.reasoning_tokens` → `cache_creation_input_tokens`
+- Pass through `cache_read_input_tokens` and `cache_creation_input_tokens` from upstream
 
 ## Recommended Checks In A New Session
 
